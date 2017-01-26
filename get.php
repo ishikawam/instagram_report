@@ -71,6 +71,12 @@ $fp = fopen(__DIR__ . '/out/report.csv', 'w');
 $isFirst = true;
 foreach ($data as $row) {
     if (! isset($row['data']->entry_data->ProfilePage[0]->user)) {
+        fputcsv($fp, [$row['user'], $row['error']]);
+        if ($isFirst) {
+            // 1行目からエラーだったら強制終了
+            echo("\nERROR!\n\n");
+            exit(1);
+        }
         continue;
     }
     $userData = $row['data']->entry_data->ProfilePage[0]->user;
