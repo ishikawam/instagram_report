@@ -1,7 +1,7 @@
 <?php
 
 /**
- * instagramのユーザーの概要取得
+ * instagramのユーザーの概要を一括取得
  */
 
 $usersFile = __DIR__ . '/config/users';
@@ -65,8 +65,6 @@ foreach ($users as $key => $user) {
 
     echo("\n");
 }
-
-//var_dump($data);
 
 // レポート配信
 $fp = fopen(__DIR__ . '/out/report.csv', 'w');
