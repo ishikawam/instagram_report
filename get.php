@@ -92,6 +92,7 @@ foreach ($data as $row) {
         $csv[$key . '_date'] = date('Y-m-d H:i:s', $article->date);
         $csv[$key . '_comments'] = $article->comments->count;
         $csv[$key . '_likes'] = $article->likes->count;
+        $csv[$key . '_thumbnail'] = $article->thumbnail_src;
     }
     if ($isFirst) {
         fputcsv($fp, array_keys($csv));
