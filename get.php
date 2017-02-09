@@ -39,7 +39,23 @@ foreach ($users as $key => $user) {
     }
 
     // Instagram取得
-    $content = @file_get_contents('https://instagram.com/' . $user . '/');
+    $stream_context = stream_context_create(['http' => [
+                'timeout' => 20,
+                'ignore_errors' => true,
+            ]]);
+    for ($i = 0; $i < 3; $i++) {
+        // タイムアウトの可能性あり。3回までリトライする
+        $http_response_header = null;
+        $content = @file_get_contents('https://instagram.com/' . $user . '/', false, $stream_context);
+        if (count($http_response_header) == 0) {
+            echo("Retry $i (timeout) ");
+        } elseif (empty($content)) {
+            echo("Retry $i (no content) ");
+        } else {
+            // 成功
+            break;
+        }
+    }
     if (empty($content)) {
         $data[$key]['error'] = 'No content error';
         echo(sprintf("ERROR: No content error: '%s'\n", $user));
@@ -50,13 +66,23 @@ foreach ($users as $key => $user) {
     if (! preg_match('|<script type="text/javascript">window\._sharedData = (.*?);</script>|', $content, $out)) {
         $data[$key]['error'] = 'Parse error';
         echo(sprintf("ERROR: Parse error '%s'\n", $user));
+        file_put_contents(__DIR__ . '/out/html/ERROR_PARSE_' . $user, $content);
         continue;
     }
 
     $json = json_decode($out[1]);
     if ($json === null) {
         $data[$key]['error'] = 'Json error';
-        echo(sprintf("ERROR: Json error '%s'\n", $user));
+        echo(sprintf("ERROR: Json error '%s' ", $user));
+        file_put_contents(__DIR__ . '/out/html/ERROR_JSON_' . $user, $out[1]);
+    } elseif (! isset($json->entry_data->ProfilePage[0]->user)) {
+        // ユーザーが存在しない
+        $data[$key]['error'] = 'No user error';
+        echo(sprintf("ERROR: No user error '%s' ", $user));
+    } elseif ($json->entry_data->ProfilePage[0]->user->is_private) {
+        // 鍵付きユーザー
+        $data[$key]['error'] = 'Private user error';
+        echo(sprintf("ERROR: Private user error '%s' ", $user));
     }
 
     $data[$key]['data'] = $json;
