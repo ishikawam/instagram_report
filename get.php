@@ -17,6 +17,8 @@ $urls = array_unique(array_column($data, 'url'));
 
 // Instagram取得
 $result = getContents($urls);
+echo "\n";
+
 // 200, 404以外をリトライ
 $urls = [];
 foreach ($result as $val) {
@@ -24,11 +26,17 @@ foreach ($result as $val) {
         $urls[] = $val['url'];
     }
 }
-$resultRetry = getContents($urls);
-$result = array_merge($result, $resultRetry);
+if ($urls) {
+    echo "Retry.\n";
+    $resultRetry = getContents($urls);
+    $result = array_merge($result, $resultRetry);
+    echo "\n";
+}
 
 // parse
 $data = parse($data, $result);
+echo "\n";
+
 // パースエラーはリトライ
 $urls = [];
 foreach ($data as $val) {
@@ -36,9 +44,13 @@ foreach ($data as $val) {
         $urls[] = $val['url'];
     }
 }
-$resultRetry = getContents($urls);
-$result = array_merge($result, $resultRetry);
-
+if ($urls) {
+    echo "Retry for Parse error.\n";
+    $resultRetry = getContents($urls);
+    $result = array_merge($result, $resultRetry);
+    $data = parse($data, $result);
+    echo "\n";
+}
 
 // レポート配信
 putReport($data);
