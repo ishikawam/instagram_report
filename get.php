@@ -211,7 +211,7 @@ function parse($data, $result)
         if (! preg_match('|<script type="text/javascript">window\._sharedData = (.*?);</script>|', $content, $out)) {
             $val['error'] = 'Parse error';
             echo(sprintf("ERROR: Parse error '%s'\n", $user));
-            file_put_contents(__DIR__ . '/out/html/ERROR_PARSE_' . $user, $content);
+            file_put_contents(__DIR__ . '/out/error/ERROR_PARSE_' . $user, $content);
             continue;
         }
 
@@ -219,7 +219,7 @@ function parse($data, $result)
         if ($json === null) {
             $val['error'] = 'Json error';
             echo(sprintf("ERROR: Json error '%s'\n", $user));
-            file_put_contents(__DIR__ . '/out/html/ERROR_JSON_' . $user, $out[1]);
+            file_put_contents(__DIR__ . '/out/error/ERROR_JSON_' . $user, $out[1]);
         } elseif (! isset($json->entry_data->ProfilePage[0]->user)) {
             // ユーザーが存在しない
             $val['error'] = 'No user error';

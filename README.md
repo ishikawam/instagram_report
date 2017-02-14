@@ -13,6 +13,7 @@ instagramのユーザーの概要を一括取得
 各項目は
 
 * user: アカウント
+* status: エラーの場合等のステータス
 * follows: フォロー数
 * followers: フォロワー数
 * articles: 投稿記事数
@@ -23,9 +24,20 @@ instagramのユーザーの概要を一括取得
 
 数値は0が最新で、12件分取得できます。
 
-エラーがあった場合は2列目(follows)にエラーメッセージが入っています。
+エラーがあった場合は2列目(status)にエラーメッセージが入っています。
 
-0_date以降に入っていないものは非公開設定のユーザーかもです。（もしくは記事投稿数0件）
+正常
 
+* '' (空)
+* No user error
+* Private user
+  * 非公開設定のユーザー
+
+異常
+
+* Skip
+* No content error
+* Parse error
+* Json error
 
 以上
