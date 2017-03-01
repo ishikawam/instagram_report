@@ -39,7 +39,7 @@ echo "\n";
 
 // パースエラーはリトライ
 $urls = [];
-foreach ($data as $val) {
+foreach ($data as &$val) {
     if ($val['error'] == 'Parse error') {
         $urls[] = $val['url'];
     }
@@ -206,6 +206,7 @@ function getContents($urls)
 function parse($data, $result)
 {
     foreach ($data as &$val) {
+        $val['error'] = '';
         if (! isset($result[$val['url']])) {
             // skipのはず
             continue;
