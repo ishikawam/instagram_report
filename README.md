@@ -3,8 +3,9 @@ instagramのユーザーの概要を一括取得
 
 ## 使い方
 
-1. `confg/users.sample`を参考に、instagramアカウントを改行区切りで並べた`config/users`を作ります。
-1. `php get.php`します。
+1. `config/users.sample`を参考に、instagramアカウントを改行区切りで並べた`config/users`を作ります。
+    * 不正なURLや不正なアカウントがあると除外して取得します。
+1. `php get.php`を実行します。
 1. `out/report.csv`にフォロー数、フォロワー数、記事数、直近12件の記事のコメント数、いいね数、サムネイル画像URLがCSVで保存されます。
 1. `out/html/`内に各ユーザー毎のファイルが保存され、ユーザーページから取れるその他の情報がjsonで保存されます。
 
