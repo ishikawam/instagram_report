@@ -6,8 +6,8 @@
 
 $config = [
     'timeout' => 20,
-    'thread' => 20,
-    'wait' => 1,
+    'thread' => 5,
+    'wait' => 5,
 
     // 予約
     'retry' => 3,
