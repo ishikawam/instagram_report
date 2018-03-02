@@ -231,7 +231,7 @@ function parse($data, $result)
             continue;
         }
 
-        $json = json_decode($out[1], true); // @todo; メモリ節約のため配列に変更したい
+        $json = json_decode($out[1], true);
         if ($json === null) {
             $val['error'] = 'Json error';
             echo(sprintf("ERROR: Json error '%s'\n", $user));
