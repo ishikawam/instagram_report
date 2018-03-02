@@ -246,7 +246,9 @@ function parse($data, $result)
             echo(sprintf("ERROR: Private user '%s'\n", $user));
         }
 
-        $val['data'] = $json['entry_data']['ProfilePage'][0]['user'] ?? null;
+        if (isset($json['entry_data']['ProfilePage'][0]['user'])) {
+            $val['data'] = $json['entry_data']['ProfilePage'][0]['user'];
+        }
 
         file_put_contents(__DIR__ . '/out/html/' . $user, $out[1]);
     }
@@ -261,7 +263,7 @@ function parse($data, $result)
 function putReport($fp, $data, $isFirst = false)
 {
     foreach ($data as $row) {
-        if (($row['data'] ?? null) === null) {
+        if (! isset($row['data'])) {
             fputcsv($fp, [$row['user'], $row['error']]);
             if ($isFirst) {
                 // 1行目からエラーだったら強制終了

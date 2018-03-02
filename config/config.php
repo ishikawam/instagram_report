@@ -4,6 +4,8 @@
  * config
  */
 
+date_default_timezone_set('Asia/Tokyo');
+
 $config = [
     'timeout' => 20,
     'thread' => 5,
