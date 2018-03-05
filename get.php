@@ -2,8 +2,6 @@
 
 /**
  * instagramのユーザーの概要を一括取得
- * get.php
- *
  */
 
 run();
@@ -26,11 +24,13 @@ function run() {
         $count ++;
 
         // アクセスするURLを絞る @todo; $datasの段階で絞らないと意味ない。
-        $urls = array_unique(array_column($data, 'url'));
+        $urls = array_filter(array_unique(array_column($data, 'url')));
 
         // Instagram取得
-        $result = getContents($urls, $config['timeout']);
-        sleep($config['wait']);
+        if ($urls) {
+            $result = getContents($urls, $config['timeout']);
+            sleep($config['wait']);
+        }
 
         // 200, 404以外をリトライ
         $urls = [];
@@ -39,9 +39,10 @@ function run() {
                 $urls[] = $val['url'];
             }
         }
+
         if ($urls) {
             echo "Retry.\n";
-            $resultRetry = getContents($urls);
+            $resultRetry = getContents($urls, $config['timeout']);
             $result = array_merge($result, $resultRetry);
             echo "\n";
         }
@@ -59,7 +60,7 @@ function run() {
 
         if ($urls) {
             echo "Retry for Parse error.\n";
-            $resultRetry = getContents($urls);
+            $resultRetry = getContents($urls, $config['timeout']);
             $result = array_merge($result, $resultRetry);
             $data = parse($data, $result);
             echo "\n";
@@ -129,6 +130,9 @@ function getContents($urls, $timeout)
 {
     $mh = curl_multi_init();
     $result = [];
+    if (! $urls) {
+        return [];
+    }
 
     foreach ($urls as $url) {
         if (! $url) {
@@ -151,7 +155,11 @@ function getContents($urls, $timeout)
         $stat = curl_multi_exec($mh, $running);
     } while ($stat === CURLM_CALL_MULTI_PERFORM);
     if (! $running || $stat !== CURLM_OK) {
-        throw new RuntimeException('おかしなURLが混ざっているかも');
+        throw new RuntimeException(sprintf(
+                "おかしなURLが混ざっているかも。stat: %s\n%s" ,
+                $stat,
+                print_r($urls, true)
+            ));
     }
 
     do {
@@ -209,11 +217,13 @@ function getContents($urls, $timeout)
 function parse($data, $result)
 {
     foreach ($data as &$val) {
-        $val['error'] = '';
         if (! isset($result[$val['url']])) {
             // skipのはず
             continue;
         }
+
+        $val['error'] = '';
+
         if (! $result[$val['url']]['content']) {
             $val['error'] = 'No content error';
             echo(sprintf("ERROR: No content error: '%s'\n", $user));
