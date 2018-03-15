@@ -246,18 +246,18 @@ function parse($data, $result)
             $val['error'] = 'Json error';
             echo(sprintf("ERROR: Json error '%s'\n", $user));
             file_put_contents(__DIR__ . '/out/error/ERROR_JSON_' . $user, $out[1]);
-        } elseif (! isset($json['entry_data']['ProfilePage'][0]['user'])) {
+        } elseif (! isset($json['entry_data']['ProfilePage'][0]['graphql']['user'])) {
             // ユーザーが存在しない
             $val['error'] = 'No user error';
             echo(sprintf("ERROR: No user error '%s'\n", $user));
-        } elseif ($json['entry_data']['ProfilePage'][0]['user']['is_private']) {
+        } elseif ($json['entry_data']['ProfilePage'][0]['graphql']['user']['is_private']) {
             // 鍵付きユーザー
             $val['error'] = 'Private user';
             echo(sprintf("ERROR: Private user '%s'\n", $user));
         }
 
-        if (isset($json['entry_data']['ProfilePage'][0]['user'])) {
-            $val['data'] = $json['entry_data']['ProfilePage'][0]['user'];
+        if (isset($json['entry_data']['ProfilePage'][0]['graphql']['user'])) {
+            $val['data'] = $json['entry_data']['ProfilePage'][0]['graphql']['user'];
         }
 
         file_put_contents(__DIR__ . '/out/html/' . $user, $out[1]);
@@ -287,16 +287,16 @@ function putReport($fp, $data, $isFirst = false)
         $csv = [
             'user' => $row['user'],
             'status' => $row['error'],
-            'follows' => $userData['follows']['count'],
-            'followers' => $userData['followed_by']['count'],
-            'articles' => $userData['media']['count'],
+            'follows' => $userData['edge_follow']['count'],
+            'followers' => $userData['edge_followed_by']['count'],
+            'articles' => $userData['edge_owner_to_timeline_media']['count'],
         ];
 
-        foreach ($userData['media']['nodes'] as $key => $article) {
-            $csv[$key . '_date'] = date('Y-m-d H:i:s', $article['date']);
-            $csv[$key . '_comments'] = $article['comments']['count'];
-            $csv[$key . '_likes'] = $article['likes']['count'];
-            $csv[$key . '_thumbnail'] = $article['thumbnail_src'];
+        foreach ($userData['edge_owner_to_timeline_media']['edges'] as $key => $article) {
+            $csv[$key . '_date'] = date('Y-m-d H:i:s', $article['node']['taken_at_timestamp']);
+            $csv[$key . '_comments'] = $article['node']['edge_media_to_comment']['count'];
+            $csv[$key . '_likes'] = $article['node']['edge_liked_by']['count'];
+            $csv[$key . '_thumbnail'] = $article['node']['thumbnail_src'];
         }
         if ($isFirst) {
             fputcsv($fp, array_keys($csv));
