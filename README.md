@@ -50,5 +50,6 @@ git clone https://github.com/ishikawam/instagram_report.git
 * No content error
 * Parse error
 * Json error
+* Not found
 
 以上
