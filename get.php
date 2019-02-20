@@ -175,8 +175,9 @@ function getContents($urls, $timeout)
                 continue 2;
 
             case 0: // タイムアウト
-                echo "[timeout]\n";
-                continue 2; // retry
+                sleep(1);
+//                echo "[timeout]\n";
+//                continue 2; // retry
 
             default:
                 do {
@@ -188,7 +189,7 @@ function getContents($urls, $timeout)
                         // 変化のあったcurlハンドラを取得する
                         $info = curl_getinfo($raised['handle']);
                         if ($info['http_code'] != 200) {
-                            echo "$info[http_code] : $info[url]\n";
+                            // echo "$info[http_code] : $info[url]\n";
                         }
 
                         $result[$info['url']] = [
@@ -226,7 +227,7 @@ function parse($data, $result)
 
         if (! $result[$val['url']]['content']) {
             $val['error'] = 'No content error';
-            echo(sprintf("ERROR: No content error: '%s'\n", $user));
+            echo(sprintf("ERROR: No content error: '%s'  %s\n", $user, $val['url']));
             continue;
         }
 
@@ -234,9 +235,18 @@ function parse($data, $result)
         $user = $val['user'];
 
         $out = null;
+        if (preg_match('|<title>.*Page Not Found &bull; Instagram.*</title>|ms', $content, $out)) {
+            $val['error'] = 'Not found';
+            echo(sprintf("ERROR: Not found '%s'  %s\n", $user, $val['url']));
+            file_put_contents(__DIR__ . '/out/error/ERROR_NOT_FOUND_' . $user, $content);
+            continue;
+        }
+
+
+        $out = null;
         if (! preg_match('|<script type="text/javascript">window\._sharedData = (.*?);</script>|', $content, $out)) {
             $val['error'] = 'Parse error';
-            echo(sprintf("ERROR: Parse error '%s'\n", $user));
+            echo(sprintf("ERROR: Parse error '%s'  %s\n", $user, $val['url']));
             file_put_contents(__DIR__ . '/out/error/ERROR_PARSE_' . $user, $content);
             continue;
         }
@@ -244,16 +254,16 @@ function parse($data, $result)
         $json = json_decode($out[1], true);
         if ($json === null) {
             $val['error'] = 'Json error';
-            echo(sprintf("ERROR: Json error '%s'\n", $user));
+            echo(sprintf("ERROR: Json error '%s'  %s\n", $user, $val['url']));
             file_put_contents(__DIR__ . '/out/error/ERROR_JSON_' . $user, $out[1]);
         } elseif (! isset($json['entry_data']['ProfilePage'][0]['graphql']['user'])) {
             // ユーザーが存在しない
             $val['error'] = 'No user error';
-            echo(sprintf("ERROR: No user error '%s'\n", $user));
+            echo(sprintf("ERROR: No user error '%s'  %s\n", $user, $val['url']));
         } elseif ($json['entry_data']['ProfilePage'][0]['graphql']['user']['is_private']) {
             // 鍵付きユーザー
             $val['error'] = 'Private user';
-            echo(sprintf("ERROR: Private user '%s'\n", $user));
+            echo(sprintf("ERROR: Private user '%s'  %s\n", $user, $val['url']));
         }
 
         if (isset($json['entry_data']['ProfilePage'][0]['graphql']['user'])) {
@@ -277,8 +287,8 @@ function putReport($fp, $data, $isFirst = false)
             fputcsv($fp, [$row['user'], $row['error']]);
             if ($isFirst) {
                 // 1行目からエラーだったら強制終了
-                echo("\nERROR!\n\n");
-                exit(1);
+//                echo("\nERROR!\n\n");
+//                exit(1);
             }
             continue;
         }
